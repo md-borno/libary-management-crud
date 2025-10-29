@@ -1,61 +1,210 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Here’s a complete **README.md** file for your **Laravel Library Management Mini-System** project — clear, professional, and following the structure from the task PDF you uploaded:
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+---
 
-## About Laravel
+````markdown
+# 📚 Library Management Mini-System
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+A simple **Library Management Module** built using **Laravel 12** and **PostgreSQL**, implementing authentication, CRUD operations, relationships, reporting, and seeder data.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Features
 
-## Learning Laravel
+### 🔐 Authentication System
+- User Registration (name, email, password)
+- Login / Logout functionality
+- Access restricted to authenticated users only
+- Redirects to dashboard after login (e.g., *“Welcome to Library Management System”*)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 🧩 Entities & Relationships
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Entities:
+1. **Authors**
+2. **Books**
+3. **Borrow Records**
 
-## Laravel Sponsors
+### Relationships:
+- **Author → Books:** One Author can have many Books (`hasMany` / `belongsTo`)
+- **Book → Borrow Records:** One Book can have many Borrow Records (`hasMany` / `belongsTo`)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## ⚙️ CRUD Operations
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 1. 🧑‍💼 Author CRUD
+**Fields:**
+- id, name, email, birth_date, timestamps
 
-## Contributing
+**Features:**
+- Create, edit, delete, and list all authors
+- Display total number of books (`withCount('books')`)
+- Show all books written by an author
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+### 2. 📘 Book CRUD
+**Fields:**
+- id, title, author_id (FK), published_year, isbn, timestamps
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**Features:**
+- Create, edit, delete, and list books
+- Each book belongs to an author
+- Handle deletion of related books when author is deleted (cascade or restrict)
+- Show author name in book list
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 3. 📖 Borrow Record CRUD
+**Fields:**
+- id, book_id (FK), borrower_name, borrowed_at, returned_at (nullable), timestamps
 
-## License
+**Features:**
+- Create new borrow records
+- Update record when returned (`returned_at` set)
+- List all borrow records with Book Title and Author Name
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 📊 Reporting (Using Eloquent ORM Only)
+
+**1. Books Never Borrowed**
+```php
+Book::whereDoesntHave('borrowRecords')->get();
+````
+
+**2. Top 3 Authors by Borrow Count**
+
+```php
+Author::withCount('borrowRecords')
+      ->orderByDesc('borrow_records_count')
+      ->take(3)
+      ->get();
+```
+
+**3. Currently Borrowed Books**
+
+```php
+BorrowRecord::whereNull('returned_at')
+    ->with(['book.author'])
+    ->get();
+```
+
+---
+
+## 🧱 Database Setup
+
+### Migrations
+
+Run all migrations to create necessary tables:
+
+```bash
+php artisan migrate
+```
+
+### Seeders
+
+Preload data using seeders:
+
+```bash
+php artisan db:seed
+# or run both migration and seeding
+php artisan migrate --seed
+```
+
+**Included Seeders:**
+
+* `AuthorSeeder` – creates at least 5 authors
+* `BookSeeder` – creates at least 10 books (each linked to an author)
+* `BorrowRecordSeeder` – creates at least 5 borrow records (some unreturned)
+
+---
+
+## 🧪 Bonus (Optional Features)
+
+* Form validation (unique email for authors, unique ISBN for books)
+* Soft deletes for books
+* Search/filter functionality
+* Pagination for listings
+* Dashboard summary (total authors, total books, total borrowed books)
+
+---
+
+## 🛠️ Installation & Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/md-borno/libary-management-crud.git
+cd library-management-mini-system
+```
+
+### 2. Install Dependencies
+
+```bash
+composer install
+```
+
+### 3. Create Environment File
+
+```bash
+cp .env.example .env
+```
+
+### 4. Configure Database
+
+Update `.env` file:
+
+```env
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=library_management
+DB_USERNAME=postgres
+DB_PASSWORD="your password"
+```
+
+### 5. Generate Key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Run Migrations and Seeders
+
+```bash
+php artisan migrate --seed
+```
+
+### 7. Start Development Server
+
+```bash
+php artisan serve
+```
+
+---
+
+## 👤 Example Login Credentials
+
+| Email                                         | Password |
+| --------------------------------------------- | -------- |
+| [admin@example.com](mailto:admin@example.com) | password |
+| [user@example.com](mailto:user@example.com)   | password |
+
+*(You can update credentials in the Users table or seeder.)*
+
+---
+
+## 🧠 Explanation Summary
+
+| Concept            | Description                                                       |
+| ------------------ | ----------------------------------------------------------------- |
+| **Relationships**  | Author → Books (1:N), Book → Borrow Records (1:N)                 |
+| **Queries**        | Eloquent ORM only (`withCount`, `whereDoesntHave`, `orderByDesc`) |
+| **Reports**        | Books never borrowed, top authors, currently borrowed books       |
+| **Access Control** | Auth middleware restricts CRUD access                             |
+| **Data Handling**  | Migration + Seeder setup ensures consistent test data             |
+
+---
